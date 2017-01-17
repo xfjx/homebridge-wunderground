@@ -1,6 +1,6 @@
 {
   "name": "homebridge-wunderground",
-  "version": "0.0.2",
+  "version": "0.0.3",
   "description": "wunderground plugin for homebridge",
   "license": "ISC",
   "keywords": [
