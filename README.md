@@ -3,9 +3,9 @@ Weather Underground plugin for homebridge: https://github.com/nfarina/homebridge
 
 This is a very basic plugin for Nfarina's wonderfull [Homebridge project](https://github.com/nfarina/homebridge). It will fetch current weather conditions from [Weather Underground](http://wunderground.com) and provide temperature and humidity information for HomeKit.
 
-You can use these values as conditions for triggers or just look at them via HomeKit enabled Apps on your iOS device or even ask Siri for them.
+You can look at the current weather conditions via HomeKit enabled Apps on your iOS device or even ask Siri for them.
 
-It will get new data only once per minute.
+It will get new data once per minute.
 
 # Installation
 
@@ -22,6 +22,9 @@ Configuration sample:
  ```
 Add the following information to your config file.
 Make sure to add your API key and provice your city or postal code.
+
+You can also provide a PWS-ID instead. Just use something like "city":"pws:XYZ1"
+Make sure to replace any blanks in your city name by underscores ('_').
 
 "accessories": [
     {
