@@ -22,33 +22,47 @@ function WUTemphum(log, config) {
 WUTemphum.prototype = {
 
     getStateHumidity: function(callback){
-	callback(null, this.humidity);
+        var that = this;
+
+        this.getState(function() {
+            callback(null, that.humidity);
+        });
+    },
+
+    getStateTemperature: function(callback){
+        var that = this; 
+        
+        this.getState(function() {
+            callback(null, that.temperature);
+        });
     },
 
     getState: function (callback) {
-	// Only fetch new data once per minute
-	var that = this;
-	if (this.timestampOfLastUpdate + 60 < (Date.now() / 1000 | 0))
-	{
-		that.timestampOfLastUpdate = Date.now() / 1000 | 0;
-		that.wunderground.conditions().request(that.city, function(err, response){
-		    if (!err && response['current_observation'] && response['current_observation']['temp_c']) {
-			that.log('Successfully fetched weather data from wunderground.com');
-    			that.temperature = response['current_observation']['temp_c'];
-  			that.humidity = parseInt(response['current_observation']['relative_humidity'].substr(0, response['current_observation']['relative_humidity'].length-1));
-		    }
-		    else {
-			that.log("Error fetching weather data from wunderground.com! Check your configuration.");
-			if (response['response']['error']['type'] && response['response']['error']['description'])
-			    that.log(response['response']['error']['type'] + " : " + response['response']['error']['description']);
-			if (err)
-			    that.log(err);
-		    }
-		});
-	}
-	temperatureService.setCharacteristic(Characteristic.CurrentTemperature, this.temperature);
-    	humidityService.setCharacteristic(Characteristic.CurrentRelativeHumidity, this.humidity);
-	callback(null, this.temperature);
+    	// Only fetch new data once per minute
+    	var that = this;
+    	if (this.timestampOfLastUpdate + 60 > (Date.now() / 1000 | 0)){
+            callback()
+            return;
+        }
+
+        that.timestampOfLastUpdate = Date.now() / 1000 | 0;
+
+        that.wunderground.conditions().request(that.city, function(err, response){
+            if (!err && response['current_observation'] && response['current_observation']['temp_c']) {
+                that.log('Successfully fetched weather data from wunderground.com');
+                that.temperature = response['current_observation']['temp_c'];
+                that.humidity = parseInt(response['current_observation']['relative_humidity'].substr(0, response['current_observation']['relative_humidity'].length-1));
+                callback();
+            }
+            else {
+                that.log("Error fetching weather data from wunderground.com! Check your configuration.");
+                if (response['response']['error']['type'] && response['response']['error']['description'])
+                    that.log(response['response']['error']['type'] + " : " + response['response']['error']['description']);
+                if (err)
+                    that.log(err);
+                callback();
+            }
+        });
     },
 
     identify: function (callback) {
@@ -67,7 +81,7 @@ WUTemphum.prototype = {
         temperatureService = new Service.TemperatureSensor(this.name);
         temperatureService
                 .getCharacteristic(Characteristic.CurrentTemperature)
-                .on('get', this.getState.bind(this));
+                .on('get', this.getStateTemperature.bind(this));
 
         temperatureService
                 .getCharacteristic(Characteristic.CurrentTemperature)
@@ -83,8 +97,6 @@ WUTemphum.prototype = {
                 .on('get', this.getStateHumidity.bind(this));
 
         return [informationService, temperatureService, humidityService];
-
-	return this.services;
     }
 };
 
