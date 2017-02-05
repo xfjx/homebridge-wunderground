@@ -37,7 +37,7 @@ WUTemphum.prototype = {
     getState: function (callback) {
     	// Only fetch new data once per minute
     	var that = this;
-    	if (this.timestampOfLastUpdate + 60 > (Date.now() / 1000 | 0)){
+    	if (this.timestampOfLastUpdate + 180 > (Date.now() / 1000 | 0)){
             callback(that.weather)
             return;
         }
@@ -53,7 +53,7 @@ WUTemphum.prototype = {
             }
             else {
                 that.log("Error fetching weather data from wunderground.com! Check your configuration.");
-                if (response['response']['error']['type'] && response['response']['error']['description'])
+                if (response['response']['error'] && response['response']['error']['type'] && response['response']['error']['description'])
                     that.log(response['response']['error']['type'] + " : " + response['response']['error']['description']);
                 if (err)
                     that.log(err);
