@@ -5,7 +5,7 @@ This is a very basic plugin for Nfarina's wonderfull [Homebridge project](https:
 
 You can look at the current weather conditions via HomeKit enabled Apps on your iOS device or even ask Siri for them.
 
-It will get new data once per minute.
+It will retrieve new data no more than 3 time per minute. Polling is also now optional by setting the polling (minutes) parameter in the config.json. Polling happens in the background, defaults to 0 (OFF), and must be at least 5 minutes so as not to exceed the 500 daily maximum calls to WeatherUnderground (Developer service).
 
 # Installation
 
@@ -25,6 +25,7 @@ Make sure to add your API key and provice your city or postal code.
 
 You can also provide a PWS-ID instead. Just use something like "city":"pws:XYZ1"
 Make sure to replace any blanks in your city name by underscores ('_').
+Polling is optional and defaults to 0 (OFF).
 
 "accessories": [
     {
@@ -32,7 +33,8 @@ Make sure to replace any blanks in your city name by underscores ('_').
       "name": "Weather Underground",
       "device": "WURecklinghausen",
       "key": "xxxxxxxxxxxx",
-      "city": "Germany/Recklinghausen"
+      "city": "Germany/Recklinghausen",
+	  "polling": "10"
       }
     ]
 ```
