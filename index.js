@@ -74,7 +74,7 @@ WUTemphum.prototype = {
             if (!err && response['current_observation'] && response['current_observation']['temp_c']) {
                 that.log('Successfully fetched weather data from wunderground.com');
                 that.weather.temperature = response['current_observation']['temp_c'];
-                that.weather.humidity = parseInt(response['current_observation']['relative_humidity'].substr(0, response['current_observation']['relative_humidity'].length-1));
+                that.weather.humidity = parseFloat(response['current_observation']['relative_humidity']);
                 callback(that.weather);
             }
             else {
