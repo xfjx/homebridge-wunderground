@@ -16,12 +16,38 @@ function WUTemphum(log, config) {
     this.wunderground = new Wunderground(config['key']);
     this.name = config['name'];
     this.city = config['city'];
+    this.WUPolling = config['polling'] || '0'; // Default is no polling.
     this.timestampOfLastUpdate = 0;
     this.weather = {};
+	
+	if (this.WUPolling > 0) {
+		if (this.WUPolling < 5) this.WUPolling = 5; // Minimum polling time to not exceed 500/day.
+		var that = this;
+		this.WUPolling *= 60000;
+		setTimeout(function() {
+			that.servicePolling();
+		}, this.WUPolling);
+	};
+
+	this.log.info("WUnderground Polling (minutes) is: %s", (this.WUPolling == '0') ? 'OFF' : this.WUPolling/60000);
+	
 }
 
 WUTemphum.prototype = {
-
+	
+	servicePolling: function(){
+		this.log.info('WUnderground Polling...');
+		this.getState(function(p) {
+			var that = this;
+			that.log.info("WUnderground Temperature is: %s, Humidity is: %s", p.temperature, p.humidity);
+			that.temperatureService.setCharacteristic(Characteristic.CurrentTemperature, p.temperature || 0);
+			that.humidityService.setCharacteristic(Characteristic.CurrentRelativeHumidity, p.humidity || 0);
+			setTimeout(function() {
+				that.servicePolling();
+			}, that.WUPolling);
+		}.bind(this));
+	},
+	
     getStateHumidity: function(callback){
         this.getState(function(w) {
             callback(null, w.humidity || 0);
@@ -35,7 +61,7 @@ WUTemphum.prototype = {
     },
 
     getState: function (callback) {
-    	// Only fetch new data once per minute
+    	// Only fetch new data once every 3 minutes max
     	var that = this;
     	if (this.timestampOfLastUpdate + 180 > (Date.now() / 1000 | 0)){
             callback(that.weather)
@@ -48,7 +74,7 @@ WUTemphum.prototype = {
             if (!err && response['current_observation'] && response['current_observation']['temp_c']) {
                 that.log('Successfully fetched weather data from wunderground.com');
                 that.weather.temperature = response['current_observation']['temp_c'];
-                that.weather.humidity = parseInt(response['current_observation']['relative_humidity'].substr(0, response['current_observation']['relative_humidity'].length-1));
+                that.weather.humidity = parseFloat(response['current_observation']['relative_humidity']);
                 callback(that.weather);
             }
             else {
@@ -66,34 +92,38 @@ WUTemphum.prototype = {
         this.log("Identify requested!");
         callback(); // success
     },
-
+	
     getServices: function () {
+        var services = []
         var informationService = new Service.AccessoryInformation();
 
         informationService
                 .setCharacteristic(Characteristic.Manufacturer, "HomeBridge")
                 .setCharacteristic(Characteristic.Model, "Weather Underground")
                 .setCharacteristic(Characteristic.SerialNumber, this.city);
-
-        temperatureService = new Service.TemperatureSensor(this.name);
-        temperatureService
+		services.push(informationService);
+		
+        this.temperatureService = new Service.TemperatureSensor(this.name);
+        this.temperatureService
                 .getCharacteristic(Characteristic.CurrentTemperature)
                 .on('get', this.getStateTemperature.bind(this));
 
-        temperatureService
+        this.temperatureService
                 .getCharacteristic(Characteristic.CurrentTemperature)
                 .setProps({minValue: -50});
         
-        temperatureService
+        this.temperatureService
                 .getCharacteristic(Characteristic.CurrentTemperature)
                 .setProps({maxValue: 50});
-
-        humidityService = new Service.HumiditySensor(this.name);
-        humidityService
+		services.push(this.temperatureService);
+		
+        this.humidityService = new Service.HumiditySensor(this.name);
+        this.humidityService
                 .getCharacteristic(Characteristic.CurrentRelativeHumidity)
                 .on('get', this.getStateHumidity.bind(this));
-
-        return [informationService, temperatureService, humidityService];
+		services.push(this.humidityService);
+		
+        return services;
     }
 };
 
