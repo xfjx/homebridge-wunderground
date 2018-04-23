@@ -85,7 +85,7 @@ WUTemphum.prototype = {
                 that.humidityService.setCharacteristic(Characteristic.StatusFault,1);
                 if (err) {
                   that.log(err);
-                } else if (response['response']['error'] && response['response']['error']['type'] && response['response']['error']['description']) {
+                } else if (response && response['response'] && response['response']['error'] && response['response']['error']['type'] && response['response']['error']['description']) {
                   that.log(response['response']['error']['type'] + " : " + response['response']['error']['description']);
                 }
                 callback(that.weather);

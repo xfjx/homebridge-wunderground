@@ -1,6 +1,6 @@
 {
   "name": "homebridge-wunderground",
-  "version": "0.0.7",
+  "version": "0.0.8",
   "description": "wunderground plugin for homebridge",
   "license": "ISC",
   "keywords": [
@@ -18,7 +18,6 @@
     "url": "git://github.com/xfjx/homebridge-wunderground.git"
   },
   "dependencies": {
-    "wundergroundnode": ">=0.9",
-    "suncalc": ">=1.8.0"
+    "wundergroundnode": "^0.11.0"
   }
 }
